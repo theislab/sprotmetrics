@@ -101,6 +101,11 @@ intersphinx_mapping = {
     "anndata": ("https://anndata.scverse.org/en/stable/", None),
     "scanpy": ("https://scanpy.scverse.org/en/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "sklearn": ("https://scikit-learn.org/stable/", None),
+    "skimage": ("https://scikit-image.org/docs/stable/", None),
+    "spatialdata": ("https://spatialdata.scverse.org/en/stable/", None),
 }
 
 # List of patterns, relative to source directory, that match files and
@@ -135,3 +140,37 @@ nitpick_ignore = [
     # you can add an exception to this list.
     #     ("py:class", "igraph.Graph"),
 ]
+
+
+# -- Workaround: scverse-misc's base filter vs sphinx-autodoc-typehints ------
+#
+# Both extensions listen on `autodoc-process-bases`. sphinx-autodoc-typehints
+# runs first and replaces the base classes with their rendered strings, after
+# which scverse_doc's `_skip_private_bases` calls `.__name__` on each and raises
+# `'str' object has no attribute '__name__'`. It only bites on classes that
+# reach that hook with bases left to filter -- here the two public dataclasses.
+#
+# Replace the listener with one that does the same filtering but tolerates
+# either form. Remove once scverse-misc handles stringified bases upstream.
+def _skip_private_bases_tolerant(app, name, obj, options, bases):
+    """Drop `object`, `Generic` and private base classes, however they are spelled."""
+    from typing import Generic, get_origin
+
+    def keep(base):
+        if base is object:
+            return False
+        if get_origin(base) is Generic:
+            return False
+        label = base if isinstance(base, str) else getattr(base, "__name__", "")
+        return not label.lstrip("~").rpartition(".")[2].startswith("_")
+
+    bases[:] = [b for b in bases if keep(b)]
+
+
+def setup(app):
+    """Swap scverse-misc's base filter for one that tolerates stringified bases."""
+    listeners = app.events.listeners.get("autodoc-process-bases", [])
+    for listener in list(listeners):
+        if listener.handler.__name__ == "_skip_private_bases":
+            listeners.remove(listener)
+    app.connect("autodoc-process-bases", _skip_private_bases_tolerant)

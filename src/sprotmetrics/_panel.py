@@ -53,7 +53,11 @@ def _split_csv(value: str | Sequence[str] | None) -> list[str]:
 
 
 def resolve_nuclear_markers(markers: Sequence[str], requested: Sequence[str] | str | None = None) -> list[int]:
-    """Indices of the nuclear channels, named explicitly or matched against :data:`NUCLEAR_HINTS`."""
+    """Indices of the nuclear channels, named explicitly or matched against the hint list.
+
+    The default hints are ``dna``, ``dapi``, ``hoechst`` and ``syto``, matched
+    case-insensitively as substrings of the marker name.
+    """
     names = [str(m) for m in markers]
     wanted = _split_csv(requested)
     if wanted:
@@ -299,9 +303,9 @@ def segmentation_quality(
 ) -> dict[str, float]:
     """Reference-free segmentation quality: the benchmark's five ids, in its order.
 
-    Combines the panel-knowledge checks in this module with
+    Combines the panel-knowledge checks here with
     :func:`sprotmetrics.spillover_ratio`, which needs centroids rather than panel
-    knowledge and so lives in :mod:`sprotmetrics._spatial`.
+    knowledge.
     """
     from sprotmetrics._spatial import spillover_ratio
 

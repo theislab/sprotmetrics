@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -23,4 +23,4 @@ type VectorLike = np.ndarray | pd.Series | Sequence[float] | str
 # name, or None for "every cell".
 type Mask = np.ndarray | pd.Series | Sequence[bool] | Sequence[int] | str | None
 
-__all__ = ["Any", "MatrixLike", "Mask", "Sequence", "VectorLike"]
+__all__ = ["Any", "Mapping", "MatrixLike", "Mask", "Sequence", "VectorLike"]

@@ -162,6 +162,12 @@ class MetricInfo:
         return out
 
 
+# Re-home the public enums and dataclass onto the package namespace, so both
+# autodoc and repr() show `sprotmetrics.Task` rather than the private module.
+for _public in (Task, Reference, Inputs, Direction, Strength, Status, MetricInfo):
+    _public.__module__ = "sprotmetrics"
+del _public
+
 _REGISTRY: dict[str, MetricInfo] = {}
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -259,6 +265,8 @@ def register_placeholder(
     reference: Reference,
     inputs: Inputs,
     direction: Direction = Direction.NONE,
+    min: float = float("nan"),
+    max: float = float("nan"),
     superseded_by: str | None = None,
     notes: str = "",
     origin: str = "",
@@ -283,8 +291,8 @@ def register_placeholder(
         task=tuple(task),
         reference=reference,
         inputs=inputs,
-        min=float("nan"),
-        max=float("nan"),
+        min=min,
+        max=max,
         direction=direction,
         status=status,
         qc_variant=False,

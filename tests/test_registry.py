@@ -23,9 +23,13 @@ def test_catalogue_is_not_empty():
 @pytest.mark.parametrize("metric_id", sorted(spm.list_metrics().index))
 def test_declared_bounds_are_coherent(metric_id):
     info = spm.get_metric(metric_id)
-    assert info.min <= info.max
     assert info.label and info.summary
     assert info.family
+    if info.func is None:
+        # A metric recorded but not computed here may legitimately have no bounds.
+        return
+    assert np.isfinite(info.min) or np.isinf(info.min)
+    assert info.min <= info.max
 
 
 def test_every_id_has_exactly_one_producer():

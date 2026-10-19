@@ -15,6 +15,7 @@ whether a larger value is better.
 
 from importlib.metadata import version
 
+from sprotmetrics import _deprecations
 from sprotmetrics._basic import (
     basic_statistics,
     cell_area,
@@ -36,6 +37,7 @@ from sprotmetrics._covariates import (
     mean_variance_correlation,
     variance_explained_by_covariate,
 )
+from sprotmetrics._localisation import localisation_agreement, nuclear_enrichment
 from sprotmetrics._markers import (
     marker_bimodality,
     marker_cv,
@@ -123,6 +125,7 @@ __all__ = [
     "intracell_coverage",
     "label_areas",
     "list_metrics",
+    "localisation_agreement",
     "marker_bimodality",
     "marker_coverage",
     "marker_cv",
@@ -140,6 +143,7 @@ __all__ = [
     "n_cells",
     "n_markers",
     "normalization_diagnostics",
+    "nuclear_enrichment",
     "nuclear_signal_containment",
     "object_f1",
     "object_overlaps",
