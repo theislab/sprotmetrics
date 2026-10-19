@@ -1,15 +1,68 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project are documented here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses
+[semantic versioning](https://semver.org/spec/v2.0.0.html). While the version is
+below 1.0 the API may still change.
 
-The format is based on [Keep a Changelog][],
-and this project adheres to [Semantic Versioning][].
+## [0.1.0]
 
-[keep a changelog]: https://keepachangelog.com/
-[semantic versioning]: https://semver.org/
-
-## [Unreleased]
+First release. The metrics were extracted from the ISP preprocessing benchmark
+(`task_isp_preprocessing`, itself derived from the OpenProblems
+`task_ist_preprocessing`) and from the scverse hackathon `sprot` prototypes, and
+the extraction is verified rather than asserted: every one of the 336 metric
+values the benchmark produced across six families and four exemplar-001 runs is
+reproduced bit for bit by `scripts/check_against_benchmark.py`.
 
 ### Added
 
-- Basic tool, preprocessing and plotting functions
+- A metric registry. Each metric declares what it measures, its range, which
+  pipeline stage it scores, what it needs beyond the sample, and whether a
+  larger value is better. `list_metrics()` returns it as a DataFrame and
+  `to_openproblems_info()` emits the `info.metrics[]` block the OpenProblems
+  schema requires. Direction previously lived only in a hand-maintained
+  spreadsheet, so nothing could read it at runtime.
+- Six metric families as single calls: `basic_statistics`,
+  `marker_distribution`, `normalization_diagnostics`, `covariate_dependence`,
+  `segmentation_quality` and `signal_background`, plus `cluster_separability`
+  and `segmentation_agreement`.
+- Per-quantity functions underneath each family, vector-valued where the
+  quantity is per cell or per marker -- so `marker_coverage` says *which* marker
+  is dragging the panel down, not only that the panel is down.
+- `CellPixelStats`: one pass over an image, reused by every pixel-level metric.
+  Its `.subset()` restricts the cells while holding thresholds, ring statistics
+  and background curves fixed, which is what makes a QC-filtered value
+  comparable with an unfiltered one.
+- `_qc_pass` variants on every family via `qc_variants=`, and arbitrary cell
+  selections via `subset=`.
+- Metrics that were designed but never built: `marker_bimodality` (including the
+  published bimodality index), `tile_cv`, `nuclear_signal_containment`,
+  `signal_drop_on_aggregation`, `clustering_stability`, `nuclear_enrichment` and
+  `localisation_agreement`.
+- `sprotmetrics.sd`, thin SpatialData wrappers, under the `spatialdata` extra.
+- A record of metrics this package deliberately does not compute, each with its
+  reason and replacement, queryable through
+  `list_metrics(include_deprecated=True)`.
+
+### Changed from the benchmark implementations
+
+- One Otsu helper replaces two that disagreed on which scale they returned.
+  Positivity is compared in log space, avoiding an `expm1` round trip that can
+  move a value sitting exactly on the cut.
+- `object_f1` returns 0.0 when nothing matches, rather than NaN. The script it
+  came from returned 0.0 for one no-match case and NaN for the other, which made
+  an over-expanded segmentation look unmeasurable instead of bad.
+- `nuclear_signal_containment` is marked weak evidence: growing every mask raises
+  it, so it must be read against `spillover_ratio`.
+- Missing QC annotation now warns instead of silently producing NaN columns.
+- A missing layer raises and names the layers that do exist, instead of quietly
+  falling back to `.X`.
+
+### Known issues
+
+- `median_intracell_coverage` reads exactly 1.0 on real data. It averages the
+  most-covered 5% of cells, which are above their own Otsu threshold everywhere,
+  so it saturates by construction. Registered experimental pending redesign.
+- `median_cell_marker_rank_correlation` is exactly 1.0 whenever normalization is
+  monotone per cell, which all the benchmarked methods are. Kept for
+  compatibility and registered as descriptive, so it cannot be ranked on.

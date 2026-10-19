@@ -4,7 +4,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "sprotmetrics"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = """\
   Quality metrics for imaging-based spatial proteomics: segmentation, signal-to-background, normalization, marker \
   distribution and technical-covariate diagnostics.\
