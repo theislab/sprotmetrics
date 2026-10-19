@@ -102,7 +102,15 @@ def _matrix(data, layer, subset):
     min=0,
     max=1,
     direction=Direction.HIGHER,
+    strength=Strength.WEAK,
     origin="Metrics-2.xlsx row 8 (no prior code)",
+    notes=(
+        "Catches objects that are debris rather than cells, but it rises with mask "
+        "size for the same reason nuclear_signal_containment does: a larger mask is "
+        "likelier to contain nuclear signal, including a neighbour's, and a single "
+        "mask covering the whole image would score 1.0. Read it against "
+        "spillover_ratio rather than on its own."
+    ),
 )
 def dapi_positive_ratio(
     data: MatrixLike,

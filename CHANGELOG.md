@@ -5,6 +5,23 @@ All notable changes to this project are documented here. The format follows
 [semantic versioning](https://semver.org/spec/v2.0.0.html). While the version is
 below 1.0 the API may still change.
 
+## Unreleased
+
+### Added
+
+- Three executed tutorials: a quickstart, a worked comparison of two
+  segmentations with no ground truth, and a guide to which metrics can rank a
+  method at all. Outputs are committed, so the pages show real numbers.
+
+### Changed
+
+- `dapi_positive_ratio` is now `Strength.WEAK`. Writing the segmentation
+  tutorial made it plain that it rises with mask size for the same reason
+  `nuclear_signal_containment` does -- a larger mask is likelier to contain
+  nuclear signal, including a neighbour's -- so it rewards the over-expansion it
+  is meant to help detect. Metric values are unchanged; only its weight in a
+  comparison is.
+
 ## [0.1.0]
 
 First release. The metrics were extracted from the ISP preprocessing benchmark
