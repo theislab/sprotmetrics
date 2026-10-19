@@ -1,0 +1,44 @@
+{
+  "template": "https://github.com/scverse/cookiecutter-scverse",
+  "commit": "6518dfa1abde7379ea7255daf0ce09c23f2b4c94",
+  "checkout": "v0.8.0",
+  "context": {
+    "cookiecutter": {
+      "project_name": "sprotmetrics",
+      "package_name": "sprotmetrics",
+      "project_description": "Quality metrics for imaging-based spatial proteomics: segmentation, signal-to-background, normalization, marker distribution and technical-covariate diagnostics.",
+      "author_full_name": "Sergio Salas",
+      "author_email": "sergio.salas@helmholtz-munich.de",
+      "github_user": "theislab",
+      "github_repo": "sprotmetrics",
+      "license": "MIT License",
+      "ide_integration": true,
+      "issue_categorization": "labels",
+      "_copy_without_render": [
+        ".github/workflows/build.yaml",
+        ".github/workflows/test.yaml",
+        "docs/_templates/autosummary/**.rst"
+      ],
+      "_exclude_on_template_update": [
+        "CHANGELOG.md",
+        "LICENSE",
+        "README.md",
+        "docs/api.md",
+        "docs/index.md",
+        "docs/notebooks/example.ipynb",
+        "docs/references.bib",
+        "docs/references.md",
+        "src/**",
+        "tests/**"
+      ],
+      "_render_devdocs": false,
+      "_jinja2_env_vars": {
+        "lstrip_blocks": true,
+        "trim_blocks": true
+      },
+      "_template": "https://github.com/scverse/cookiecutter-scverse",
+      "_commit": "6518dfa1abde7379ea7255daf0ce09c23f2b4c94"
+    }
+  },
+  "directory": null
+}

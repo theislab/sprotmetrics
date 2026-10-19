@@ -1,0 +1,28 @@
+sprotmetrics
+Copyright (c) 2026 Sergio Salas and contributors
+
+This product includes or adapts software from the following projects:
+
+* task_isp_preprocessing (MIT)
+  https://github.com/juliusstein77/task_isp_preprocessing
+  itself derived from openproblems-bio/task_ist_preprocessing (MIT),
+  Copyright (c) 2024 Open Problems in Single-Cell Analysis.
+  The seven `src/metrics_proteomics/*` components are the direct source of
+  most metric implementations in this package.
+
+* sprot_best_practices (BSD-3-Clause)
+  https://github.com/theislab/sprot_best_practices
+  Copyright (c) 2023 Theis Lab.
+  Source of the prototypes adapted into the signal/background, technical
+  covariate and marker contribution metrics. The BSD-3-Clause terms, including
+  the non-endorsement clause, continue to apply to those portions; the full
+  text is in LICENSES/BSD-3-Clause-theislab-sprot_best_practices.txt and the
+  affected modules carry a per-file header.
+
+* berlin_scverse_metrics (MIT)
+  https://github.com/sergiomarco25/berlin_scverse_metrics
+  Copyright (c) 2025 Sergio Salas.
+
+Metric definitions reimplemented from published methods are cited in
+docs/references.bib and in the docstring of each function. No source code from
+those tools is included unless it is listed above.

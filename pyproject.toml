@@ -4,8 +4,11 @@ requires = [ "hatchling" ]
 
 [project]
 name = "sprotmetrics"
-version = "0.0.1"
-description = "Quality metrics for imaging-based spatial proteomics: segmentation, signal-to-background, normalization, marker distribution and technical-covariate diagnostics."
+version = "0.1.0.dev0"
+description = """\
+  Quality metrics for imaging-based spatial proteomics: segmentation, signal-to-background, normalization, marker \
+  distribution and technical-covariate diagnostics.\
+  """
 readme = "README.md"
 license = { file = "LICENSE" }
 maintainers = [
@@ -22,10 +25,24 @@ classifiers = [
   "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-  "anndata",
+  "anndata>=0.10",
+  "numpy>=2",
+  "pandas",
+  "scikit-image",
+  "scikit-learn",
+  "scipy",
   # for debug logging (referenced from the issue template)
   "session-info2",
 ]
+# Extras, kept out of the core dependency set on purpose.
+#
+# `spatialdata` would otherwise make `pip install sprotmetrics zarr<3.0.0` an
+# unsatisfiable resolve: the ISP benchmark's Viash components pin `zarr<3.0.0`,
+# while current spatialdata requires `zarr>=3`. As a core dependency it would
+# break every metric component's image build at once.
+# `external` collects heavy third-party metric implementations as they are adopted.
+optional-dependencies.external = []
+optional-dependencies.spatialdata = [ "spatialdata>=0.2" ]
 # https://docs.pypi.org/project_metadata/#project-urls
 urls.Documentation = "https://sprotmetrics.readthedocs.io/"
 urls.Homepage = "https://github.com/theislab/sprotmetrics"
