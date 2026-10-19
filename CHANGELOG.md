@@ -63,6 +63,13 @@ reproduced bit for bit by `scripts/check_against_benchmark.py`.
 - `median_intracell_coverage` reads exactly 1.0 on real data. It averages the
   most-covered 5% of cells, which are above their own Otsu threshold everywhere,
   so it saturates by construction. Registered experimental pending redesign.
+- `median_signal_to_background_ratio` is formed at the image's own float32, to
+  match the benchmark's published values. That makes it sensitive to numpy's
+  float32 reduction, which changed between 2.2 and 2.5: the value moves by about
+  1.8e-7 across those versions, while the same computation in float64 is
+  identical across both. Pin numpy if you need the published figures exactly;
+  the float64 form is the better long-term answer and is deferred so that this
+  release stays a faithful extraction.
 - `median_cell_marker_rank_correlation` is exactly 1.0 whenever normalization is
   monotone per cell, which all the benchmarked methods are. Kept for
   compatibility and registered as descriptive, so it cannot be ranked on.

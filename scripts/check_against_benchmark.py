@@ -17,10 +17,22 @@ Equality is exact, not approximate: the same inputs through the same arithmetic
 give identical floats, and a tolerance would hide exactly the reordering and
 dtype mistakes a port introduces. Two caveats learned the hard way:
 
-* Run this under the *same* numpy as produced the reference files. The
-  covariate family uses SVD and lstsq, and different BLAS builds disagree in the
-  last bit -- which is drift in the environment, not a bug in the port.
+* Run this under the *same* numpy as produced the reference files, and treat a
+  mismatch as evidence about the environment before suspecting the port. Two
+  separate effects cause it, at very different magnitudes:
+
+  - ``technical_covariates`` uses SVD and ``lstsq``, so different BLAS builds
+    disagree in the last bit (~1e-16 to 1e-13).
+  - ``median_signal_to_background_ratio`` is formed at the image's own float32,
+    and numpy's float32 reduction changed between 2.2 and 2.5: the mean over
+    ~786k float32 pixels moved by ~1.8e-7, while the same mean taken in float64
+    is bit-identical across both. The metric inherits that from the benchmark,
+    which is a fragility worth fixing rather than a porting error -- float64
+    would be both more accurate and version-stable, at the cost of no longer
+    matching already-published numbers.
+
 * ``--tolerance`` exists for deliberate changes only, and prints what it hid.
+  ``1e-6`` absorbs both effects above if you must compare across numpy versions.
 """
 
 from __future__ import annotations
