@@ -201,10 +201,32 @@ def otsu_threshold(values: np.ndarray, *, log1p: bool = True) -> float:
 
 
 def positive_mask(values: np.ndarray, *, threshold: float | None = None, log1p: bool = True) -> np.ndarray:
-    """Boolean positivity, Otsu-derived unless `threshold` is given."""
+    """Boolean positivity, Otsu-derived unless `threshold` is given.
+
+    The comparison happens in log space when `log1p` is set, rather than against
+    :func:`otsu_threshold`'s original-scale value. The two agree in exact
+    arithmetic, but a ``log1p``/``expm1`` round trip can move a value sitting
+    exactly on the cut, and marker positivity feeds discrete counts where a
+    single flipped cell is visible in the result. Callers that threshold raw
+    pixels, and report the cut they used, take the original-scale value instead.
+    """
     arr = np.asarray(values, dtype=float)
-    thr = otsu_threshold(arr, log1p=log1p) if threshold is None else threshold
-    return arr > thr
+    finite = arr[np.isfinite(arr)]
+    if finite.size == 0 or np.allclose(finite, finite[0]):
+        return np.zeros(arr.shape, dtype=bool)
+    if threshold is not None:
+        return arr > threshold
+    if not log1p:
+        return arr > otsu_threshold(arr, log1p=False)
+
+    from skimage.filters import threshold_otsu
+
+    logged = np.log1p(np.clip(arr, 0, None))
+    try:
+        cut = float(threshold_otsu(logged[np.isfinite(logged)]))
+    except ValueError:
+        return np.zeros(arr.shape, dtype=bool)
+    return logged > cut
 
 
 def coefficient_of_variation(x: np.ndarray, *, axis: int | None = None) -> float | np.ndarray:
@@ -238,18 +260,27 @@ def evenness(x: np.ndarray) -> float:
     return float(entropy(shares) / np.log(positive.size))
 
 
-def r2_against(y: np.ndarray, design: np.ndarray) -> float:
-    """R^2 of `y` regressed on `design` by least squares; NaN when undefined."""
+def r2_against(y: np.ndarray, design: np.ndarray, *, nonnegative: bool = False, default: float = float("nan")) -> float:
+    """R^2 of `y` regressed on `design` by least squares.
+
+    `default` is returned when `y` is constant, so the caller chooses between
+    "undefined" (NaN) and "explains nothing" (0.0); `nonnegative` clamps the
+    result at zero, which a covariate-dependence score wants and a general
+    goodness-of-fit does not.
+    """
     y = np.asarray(y, dtype=float)
+    if np.std(y) == 0:
+        return default
     ss_tot = float(np.sum((y - y.mean()) ** 2))
     if ss_tot <= 0:
-        return float("nan")
+        return default
     try:
         coef, *_ = np.linalg.lstsq(design, y, rcond=None)
     except np.linalg.LinAlgError:
-        return float("nan")
+        return default
     ss_res = float(np.sum((y - design @ coef) ** 2))
-    return float(1.0 - ss_res / ss_tot)
+    value = 1.0 - ss_res / ss_tot
+    return float(max(0.0, value) if nonnegative else value)
 
 
 def rank_rows(x: np.ndarray) -> np.ndarray:
