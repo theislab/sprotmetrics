@@ -300,6 +300,31 @@ please check out [this feature request][issue-render-notebooks] in the `cookiecu
 
 [issue-render-notebooks]: https://github.com/scverse/cookiecutter-scverse/issues/40
 
+### The metric reference page
+
+`docs/metrics.md` is **generated at build time** by `docs/extensions/metric_reference.py`
+from the metric registry, and is gitignored. Do not edit it: change the
+docstring, the `@metric` registration or the `notes=` on the metric instead, and
+the page follows. Keeping it generated is the only way a page describing fifty
+metrics stays true after the fiftieth is changed.
+
+The figures it embeds live in `docs/_static/metrics` as committed SVGs, so
+building the docs needs no plotting stack. Regenerate them with:
+
+```bash
+python docs/_figures/make_figures.py
+```
+
+That needs `matplotlib`, which is in the `dev` dependency group rather than
+`doc` for exactly this reason. The figures explain *mechanisms* rather than
+individual metrics, so one figure is shared by every metric resting on the same
+idea; `FIGURES` in `docs/extensions/metric_reference.py` maps a quantity
+function to its picture.
+
+New figures go in one of the `docs/_figures/fig_*.py` modules, appended to that
+module's `FIGURES` list, and use the helpers in `_draw.py` so they share the
+palette and the cell style.
+
 #### Hints
 
 - If you refer to objects from other packages, please add an entry to `intersphinx_mapping` in `docs/conf.py`.
