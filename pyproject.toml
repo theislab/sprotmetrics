@@ -50,6 +50,10 @@ urls.Source = "https://github.com/theislab/sprotmetrics"
 
 [dependency-groups]
 dev = [
+  # Only needed to regenerate docs/_static/metrics/*.svg; the docs build
+  # itself does no plotting, because the figures are committed.
+  "cairosvg",
+  "matplotlib",
   "prek",
   "twine>=4.0.2",
 ]

@@ -116,7 +116,13 @@ def qc_pass_rate(data: MatrixLike, *, qc_column: str = DEFAULT_QC_COLUMN, subset
     notes="No biological target is encoded, so neither larger nor smaller is better.",
 )
 def cell_area(data: MatrixLike, area: VectorLike = "area", *, subset: Mask = None) -> np.ndarray:
-    """Per-cell mask area, as written by the aggregation step."""
+    """Per-cell mask area, as written by the aggregation step.
+
+    Descriptive, and deliberately so: a median area of 76 against 255 says the
+    segmentations differ, not which one is right. What a plausible area is
+    depends on the tissue and the magnification. Area matters here mostly as the
+    technical covariate other metrics regress against.
+    """
     values = resolve_vector(data, area, name="area")
     if values is None:
         return np.array([], dtype=float)
@@ -137,7 +143,12 @@ def cell_area(data: MatrixLike, area: VectorLike = "area", *, subset: Mask = Non
     aggregations=("median", "mean"),
 )
 def total_intensity(data: MatrixLike, *, layer: str | None = "counts", subset: Mask = None) -> np.ndarray:
-    """Per-cell intensity summed across the panel."""
+    """Per-cell intensity summed across the panel.
+
+    The imaging analogue of library size. Descriptive on its own, and the
+    quantity a per-cell normalization is usually trying to equalise -- see
+    :func:`total_cv_ratio`.
+    """
     return _matrix(data, layer, subset).sum(axis=1)
 
 
@@ -163,7 +174,13 @@ def marker_coverage(
     threshold: float = 0.1,
     subset: Mask = None,
 ) -> np.ndarray:
-    """Fraction of cells whose intensity exceeds `threshold`, per marker."""
+    """Fraction of cells whose intensity exceeds `threshold`, per marker.
+
+    Reads as a detection rate: what share of cells carry this marker at all. It
+    saturates near 1 on a well-stained panel, which is why it is weak evidence
+    -- once every marker is detected in 99% of cells, the metric has nothing
+    left to separate methods with.
+    """
     X = _matrix(data, layer, subset)
     if X.shape[0] == 0:
         return np.array([], dtype=float)

@@ -9,6 +9,7 @@
 
 notebooks/quickstart
 notebooks/comparing-segmentations
+notebooks/scoring-normalization
 notebooks/choosing-metrics
 ```
 
@@ -17,6 +18,7 @@ notebooks/choosing-metrics
 :caption: Reference
 :maxdepth: 1
 
+metrics.md
 api.md
 changelog.md
 contributing.md

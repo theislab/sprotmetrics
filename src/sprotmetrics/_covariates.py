@@ -73,7 +73,20 @@ def variance_explained_by_covariate(
     layer: str | None = "normalized",
     subset: Mask = None,
 ) -> np.ndarray:
-    """R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``."""
+    """R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+
+    Cell area is the imaging analogue of library size, and expression that
+    tracks it is usually an artefact of how pixels were summarised rather than
+    biology. Area enters both linearly and logged because a sum-aggregated
+    marker is close to linear in it while other artefacts scale sublinearly.
+
+    Which layer you score matters. On the counts layer this sees the aggregation
+    choice -- `sum` makes every channel scale with area and `mean` does not. On
+    the normalized layer it asks whether normalization removed that dependence,
+    and per-cell total normalization divides out exactly the area scaling `sum`
+    creates, so judging the normalized layer alone makes the two aggregations
+    indistinguishable.
+    """
     X, cov = _prepare(data, layer, covariate, subset)
     if X.shape[0] < 3 or X.shape[1] == 0 or cov is None or np.std(cov) == 0:
         return np.array([], dtype=float)
@@ -102,7 +115,13 @@ def covariate_pc_correlation(
     n_pcs: int = 10,
     subset: Mask = None,
 ) -> np.ndarray:
-    """Absolute correlation of each leading principal component with cell area."""
+    """Absolute correlation of each leading principal component with cell area.
+
+    The same question as :func:`variance_explained_by_covariate`, asked of the
+    panel's dominant axes of variation rather than of each marker separately. If
+    the first principal component is largely cell size, every downstream
+    embedding and clustering inherits that.
+    """
     X, cov = _prepare(data, layer, covariate, subset)
     if X.shape[0] < 3 or X.shape[1] == 0 or cov is None or np.std(cov) == 0:
         return np.array([], dtype=float)

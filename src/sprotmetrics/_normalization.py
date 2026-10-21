@@ -69,7 +69,12 @@ def _layers(data: MatrixLike, raw_layer: str, normalized_layer: str, subset: Mas
     suffixes=("raw", "normalized"),
 )
 def total_cv(data: MatrixLike, *, layer: str | None = "counts", subset: Mask = None) -> float:
-    """Coefficient of variation of per-cell summed intensity."""
+    """Coefficient of variation of per-cell summed intensity.
+
+    Measured on one layer. Its value before and after normalization is what
+    :func:`total_cv_ratio` compares; on its own it describes how uneven the
+    per-cell totals are, which depends on the tissue as much as the processing.
+    """
     X = to_matrix(data, layer, dtype=np.float64)
     mask = resolve_subset(data, subset)
     if mask is not None:
@@ -131,7 +136,13 @@ def marker_variance_ratio(
     normalized_layer: str = "normalized",
     subset: Mask = None,
 ) -> np.ndarray:
-    """Normalized over raw variance, per marker."""
+    """Normalized over raw variance, per marker.
+
+    Records what the transform did to each marker's spread. Descriptive: a
+    normalization is supposed to change variance, and neither increasing nor
+    decreasing it is right in general. Useful for seeing whether one marker was
+    affected far more than the rest.
+    """
     raw, norm = _layers(data, raw_layer, normalized_layer, subset)
     if raw.shape[0] == 0:
         return np.array([], dtype=float)

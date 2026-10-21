@@ -103,7 +103,12 @@ def marker_table(
     aggregations=("median",),
 )
 def marker_mean(data: MatrixLike, *, layer: str | None = "counts", subset: Mask = None) -> np.ndarray:
-    """Mean intensity across cells, per marker."""
+    """Mean intensity across cells, per marker.
+
+    Descriptive. Panel-wide brightness depends on antibody concentration,
+    exposure and detector gain as much as on biology, so a higher value is not a
+    better one.
+    """
     X = _matrix(data, layer, subset)
     return X.mean(axis=0) if X.size else np.array([], dtype=float)
 
@@ -122,7 +127,13 @@ def marker_mean(data: MatrixLike, *, layer: str | None = "counts", subset: Mask 
     notes="Spread across cells may be biology or noise, so it cannot rank a method alone.",
 )
 def marker_cv(data: MatrixLike, *, layer: str | None = "counts", subset: Mask = None) -> np.ndarray:
-    """Standard deviation over mean across cells, per marker."""
+    """Standard deviation over mean across cells, per marker.
+
+    Deliberately ambiguous. A high coefficient of variation can mean a marker
+    cleanly separates two populations, or that it is noisy; nothing in the
+    number distinguishes those. Read it beside :func:`marker_bimodality`, which
+    asks whether the spread resolves into two populations or one smear.
+    """
     X = _matrix(data, layer, subset)
     if X.size == 0:
         return np.array([], dtype=float)
@@ -149,7 +160,13 @@ def marker_zero_fraction(
     threshold: float = 0.0,
     subset: Mask = None,
 ) -> np.ndarray:
-    """Fraction of cells at or below `threshold`, per marker."""
+    """Fraction of cells at or below `threshold`, per marker.
+
+    The complement of :func:`marker_coverage`, kept separate because a threshold
+    of exactly zero answers a different question: how much of the panel was
+    never detected at all. Fluorescence intensities are rarely exactly zero, so
+    a threshold above zero is usually what you want.
+    """
     X = _matrix(data, layer, subset)
     return (X <= threshold).mean(axis=0) if X.size else np.array([], dtype=float)
 
@@ -174,7 +191,13 @@ def marker_dynamic_range(
     quantiles: tuple[float, float] = (0.01, 0.99),
     subset: Mask = None,
 ) -> np.ndarray:
-    """High minus low quantile of intensity, per marker."""
+    """High minus low quantile of intensity, per marker.
+
+    A quantile spread rather than max minus min, which two pixels would
+    otherwise decide. Image correction that clips bright signal compresses this;
+    so does a marker that failed to stain, and the two look alike here, which is
+    why it is weak evidence on its own.
+    """
     X = _matrix(data, layer, subset)
     if X.size == 0:
         return np.array([], dtype=float)

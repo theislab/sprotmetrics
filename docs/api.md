@@ -5,6 +5,10 @@
 .. currentmodule:: sprotmetrics
 ```
 
+For what each metric measures and how to read it, see the
+[metric reference](metrics), which is generated from the same catalogue and
+carries a figure for each mechanism. This page is the call signatures.
+
 Three levels, and most analysis wants the first.
 
 **Quantities** are one function per scientific quantity, vector-valued where the

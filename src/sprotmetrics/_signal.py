@@ -190,7 +190,13 @@ def signal_to_background_ratio(stats: CellPixelStats) -> np.ndarray:
     origin="Metrics-2.xlsx row 14 (no prior code)",
 )
 def cellular_specificity(stats: CellPixelStats) -> np.ndarray:
-    """Positive pixels inside the masks, over positive pixels inside plus in the ring."""
+    """Positive pixels inside the masks, over positive pixels inside plus in the ring.
+
+    Where :func:`signal_to_background_ratio` compares mean intensities, this
+    compares how much of the *positive* signal landed inside a cell. A marker
+    staining the extracellular matrix scores low here while still having a
+    respectable intensity ratio, so the two are worth reading together.
+    """
     inside, ring = stats.inside_positive_fraction, stats.ring_positive_fraction
     total = inside + ring
     with np.errstate(invalid="ignore", divide="ignore"):
@@ -212,7 +218,13 @@ def cellular_specificity(stats: CellPixelStats) -> np.ndarray:
     notes="Descriptive: high suits a lineage marker and is wrong for a housekeeper.",
 )
 def marker_gini(stats: CellPixelStats) -> np.ndarray:
-    """Gini coefficient of per-cell mean intensity, per marker."""
+    """Gini coefficient of per-cell mean intensity, per marker.
+
+    Zero means every cell carries the marker equally; approaching one means a
+    few cells carry all of it. Descriptive, and firmly so: high concentration is
+    correct for a lineage marker and wrong for a housekeeping one, so the same
+    value is good or bad depending on which antibody produced it.
+    """
     sel = stats.selection
     out = np.full(len(stats.markers), np.nan)
     for c in range(len(stats.markers)):
