@@ -191,3 +191,97 @@ def cluster_separability(
         over_qc = dict.fromkeys(out, float("nan"))
     out.update({f"{k}_qc_pass": v for k, v in over_qc.items()})
     return out
+
+
+@metric(
+    name="cluster_weighted_marker_cv",
+    label="Inverse mean cluster-weighted marker CV (1–10 clusters)",
+    family=FAMILY,
+    task=(Task.NORMALIZATION,),
+    reference=Reference.NONE,
+    inputs=Inputs.MATRIX,
+    min=0,
+    max=1,
+    direction=Direction.HIGHER,
+    status=Status.EXPERIMENTAL,
+    origin="Paper: Average of weighted average CV of cell type intensities over 1–10 clusters",
+)
+def cluster_weighted_marker_cv(
+    data: MatrixLike,
+    *,
+    layer: str | None = "counts",
+    random_state: int = 777,
+    subset: Mask = None,
+) -> float:
+    """Inverse mean cluster-weighted CV over 1–10 K-means clusterings.
+
+    Marker intensities are standardized across cells for clustering.
+    CVs are calculated on the original intensity matrix.
+
+    Note: the source paper standardizes image channels at pixel level.
+    This implementation uses cell-level marker intensities because the
+    package input is a cell-by-marker matrix.
+    """
+    from sklearn.cluster import KMeans
+
+    X = _matrix(data, layer, subset)
+
+    n_cells, n_markers = X.shape
+    if n_cells < 10 or n_markers == 0:
+        return float("nan")
+
+    if not np.isfinite(X).all():
+        return float("nan")
+
+    # Standardize each marker across cells for clustering.
+    means = X.mean(axis=0)
+    stds = X.std(axis=0)
+    stds[stds == 0] = 1.0
+    X_scaled = (X - means) / stds
+
+    scores = []
+
+    for n_clusters in range(1, 11):
+        if n_clusters == 1:
+            labels = np.zeros(n_cells, dtype=int)
+        else:
+            labels = KMeans(
+                n_clusters=n_clusters,
+                random_state=random_state,
+                n_init=10,
+            ).fit_predict(X_scaled)
+
+        cluster_cvs = []
+        cluster_sizes = []
+
+        for cluster in range(n_clusters):
+            cluster_X = X[labels == cluster]
+            if cluster_X.shape[0] == 0:
+                continue
+
+            marker_means = cluster_X.mean(axis=0)
+            marker_stds = cluster_X.std(axis=0)
+
+            cvs = np.where(
+                marker_stds == 0,
+                0.0,
+                np.divide(
+                    marker_stds,
+                    marker_means,
+                    out=np.full_like(marker_stds, np.nan),
+                    where=cluster_X.sum(axis=0) != 0,
+                ),
+            )
+
+            cluster_cv = float(np.nanmean(cvs))
+            cluster_cvs.append(cluster_cv)
+            cluster_sizes.append(cluster_X.shape[0])
+
+        weighted_cv = np.average(
+            cluster_cvs,
+            weights=cluster_sizes,
+        )
+        scores.append(float(weighted_cv))
+
+    mean_cv = float(np.average(scores))
+    return 1.0 / (mean_cv + 1.0)
