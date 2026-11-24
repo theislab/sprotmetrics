@@ -73,6 +73,7 @@ class Inputs(StrEnum):
     MATRIX_TWO_LAYERS = "matrix, two layers"
     IMAGE_LABELS = "image + labels"
     LABELS_PAIR = "labels + reference labels"
+    CELL_NUCLEI_LABELS = "cell labels + nuclear labels"
 
 
 class Direction(StrEnum):

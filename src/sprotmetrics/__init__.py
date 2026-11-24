@@ -100,6 +100,8 @@ from sprotmetrics._signal import (
 )
 from sprotmetrics._spatial import resolve_coordinates, spatial_uniformity, spillover_ratio, tile_cv
 
+from sprotmetrics._cell_nucleus import fraction_of_matched_cells_and_nuclei
+
 __all__ = [
     "CellPixelStats",
     "Direction",
@@ -171,6 +173,7 @@ __all__ = [
     "total_cv_ratio",
     "total_intensity",
     "variance_explained_by_covariate",
+    "fraction_of_matched_cells_and_nuclei",
 ]
 
 __version__ = version("sprotmetrics")
